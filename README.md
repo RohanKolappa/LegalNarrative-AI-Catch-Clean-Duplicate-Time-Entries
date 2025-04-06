@@ -1,1 +1,2 @@
 # LegalNarrative-AI-Catch-Clean-Duplicate-Time-Entries
+  📌 Description: Our tool uses embeddings + NLP to flag law firm time entries as duplicates before they get rejected by client AI. Flags: - 🔴 Red: Likely duplicate - 🟡 Yellow: Similar but valid  🧪 Suggests rewording automatically. 📬 Sends alerts to timekeepers + billing attorney. 🧑‍💻 Built using Sentence-Transformers, Pandas, Streamlit, and deployed on Koyeb.
