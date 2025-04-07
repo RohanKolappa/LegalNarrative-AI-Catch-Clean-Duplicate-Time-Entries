@@ -1,22 +1,14 @@
 # LegalNarrative-AI-Catch-Clean-Duplicate-Time-Entries
-📌 Description:  
-LegalNarrative AI is a semantic NLP tool that flags law firm time entries that are likely to be rejected by client-side AI systems as duplicates.
+We're building LegalNarrative AI, a Streamlit-powered web app that helps legal teams automatically detect, flag, and reword repetitive or unclear billing narratives in PDF and Excel files.
 
-It uses embedding models to semantically compare each new entry to historical narratives and classifies them as:
-- 🔴 Red: Likely true duplicates that should be revised  
-- 🟡 Yellow: Similar entries that are probably legitimate  
+Using sentence embeddings and similarity detection, our tool:
 
-🧠 Our tool also suggests rewording to reduce the chance of rejection, helping timekeepers proactively improve narratives.
+Parses .xlsx and .pdf time entries with LlamaParse
 
-📬 Email-style summaries notify timekeepers and billing attorneys about flagged entries and suggested improvements.
+Flags similar entries with color codes (🟥 Red, 🟨 Yellow, 🟩 Green)
 
-🗂️ Ingests data from Excel, PDF, and Word documents using LlamaParse (up to 50K+ pages supported).
+Suggests rewording for better clarity and accuracy
 
-📊 Performance tracking with Scorecard AI (optional) to monitor precision, false flags, and model tuning over time.
+Outputs a downloadable CSV report to streamline editing and review
 
-🧑‍💻 Built with:
-- Sentence-Transformers (semantic similarity)
-- Pandas + Scikit-learn
-- Streamlit frontend
-- Koyeb for cloud deployment
-- LlamaIndex/LlamaParse for scalable ingestion
+📂 Supported File Types: .xlsx, .xls, .pdf
