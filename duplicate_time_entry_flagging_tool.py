@@ -7,8 +7,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-# Load .env file for API keys
 load_dotenv()
+print("Loaded LLAMA_CLOUD_API_KEY: ", os.getenv("LLAMA_CLOUD_API_KEY"))
+os.environ["LLAMA_CLOUD_API_KEY"] = "llx-FBw0uohbVgWjQNJgnAER45UIVKIhuA0XoOqwZZ3peim4xDgF"
+
+# Load .env file for API keys
 
 # Optional: LlamaParse modern integration
 from llama_cloud_services import LlamaParse
