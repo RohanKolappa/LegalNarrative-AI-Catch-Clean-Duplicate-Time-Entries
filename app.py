@@ -1,18 +1,39 @@
 import streamlit as st
-import pandas as pd
+from pathlib import Path
+from duplicate_time_entry_flagging_tool import (
+    parse_excel,
+    parse_pdf_with_llamaparse,
+    generate_embeddings,
+    process_entries
+)
 
-st.title("LegalNarrative AI – Duplicate Time Entry Flagger")
+#uploaded_file = st.file_uploader("Upload an Excel or PDF file", type=["xlsx", "xls", "pdf"])
+uploaded_file = st.file_uploader(
+    "Upload an Excel or PDF file", 
+    type=["xlsx", "xls", "pdf"], 
+    key="unique_file_uploader"
+)
 
-# Load output file
-df = pd.read_csv("flagged_time_entries.csv")
-st.write(f"## Total Entries Processed: {len(df)}")
-st.dataframe(df)
+if uploaded_file is not None:
+    with open(uploaded_file.name, "wb") as f:
+        f.write(uploaded_file.getbuffer())
 
-for _, row in df.iterrows():
-    if row['Flag'] in ['Red', 'Yellow']:
-        st.markdown(f"### 🚩 {row['Flag']} Flag for {row['Timekeeper']} on {row['Date']}")
-        st.write(f"**Narrative:** {row['Narrative']}")
-        st.write(f"**Matched Narrative:** {row['Matched Narrative']}")
-        st.write(f"**Suggestion:** {row['Suggestion']}")
-        st.markdown("---")
+    ext = Path(uploaded_file.name).suffix.lower()
+
+    if ext in [".xlsx", ".xls"]:
+        df = parse_excel(uploaded_file.name)
+    elif ext == ".pdf":
+        df = parse_pdf_with_llamaparse(uploaded_file)
+    else:
+        st.error("Unsupported file format.")
+        st.stop()
+
+    df = generate_embeddings(df)
+    result_df = process_entries(df)
+
+    st.success("Processing complete!")
+    st.dataframe(result_df)
+
+    csv = result_df.to_csv(index=False).encode("utf-8")
+    st.download_button("Download Results", csv, "flagged_time_entries.csv", "text/csv")
 

@@ -6,28 +6,30 @@ import numpy as np
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import streamlit as st
+from io import BytesIO
 
+# Load environment variables (Railway handles this automatically)
 load_dotenv()
-print("Loaded LLAMA_CLOUD_API_KEY: ", os.getenv("LLAMA_CLOUD_API_KEY"))
-os.environ["LLAMA_CLOUD_API_KEY"] = "llx-FBw0uohbVgWjQNJgnAER45UIVKIhuA0XoOqwZZ3peim4xDgF"
-
-# Load .env file for API keys
 
 # Optional: LlamaParse modern integration
 from llama_cloud_services import LlamaParse
 from llama_index.core import SimpleDirectoryReader
 
 # --- Step 2: Load Data ---
-def parse_excel(filepath: str, sheet_name: str = None):
-    df = pd.read_excel(filepath, sheet_name=sheet_name)
+def parse_excel(file):
+    df = pd.read_excel(file)
     df.dropna(subset=['Narrative'], inplace=True)
     return df
 
-def parse_pdf_with_llamaparse(file_path):
-    parser = LlamaParse(result_type="text")  # or "markdown"
+def parse_pdf_with_llamaparse(file):
+    parser = LlamaParse(result_type="text")
     file_extractor = {".pdf": parser}
-    documents = SimpleDirectoryReader(input_files=[file_path], file_extractor=file_extractor).load_data()
-
+    pdf_path = "/tmp/uploaded.pdf"
+    with open(pdf_path, "wb") as f:
+        f.write(file.read())
+    documents = SimpleDirectoryReader(input_files=[pdf_path], file_extractor=file_extractor).load_data()
+    
     data = []
     for doc in documents:
         for para in doc.text.split("\n"):
@@ -39,12 +41,12 @@ def parse_pdf_with_llamaparse(file_path):
                 })
     return pd.DataFrame(data)
 
-def load_data(filepath: str, sheet_name: str = None):
-    ext = Path(filepath).suffix.lower()
+def load_data(uploaded_file):
+    ext = Path(uploaded_file.name).suffix.lower()
     if ext in [".xlsx", ".xls"]:
-        return parse_excel(filepath, sheet_name)
+        return parse_excel(uploaded_file)
     elif ext == ".pdf":
-        return parse_pdf_with_llamaparse(filepath)
+        return parse_pdf_with_llamaparse(uploaded_file)
     else:
         raise ValueError("Unsupported file format")
 
@@ -103,15 +105,22 @@ def process_entries(df):
 
     return pd.DataFrame(flagged_results)
 
-# --- Step 8: Run All ---
-if __name__ == "__main__":
-    # Example path - replace with your actual file
-    filepath = "CodeX Hackathon 2025 Dataset.xlsx"  # or "billing_dump.pdf"
-    sheet_name = "Client #1" if filepath.endswith(".xlsx") else None
+# --- Step 8: Streamlit UI ---
+st.title("🧠 LegalNarrative AI - Time Entry Checker")
+uploaded_file = st.file_uploader("Upload an Excel or PDF file", type=["xlsx", "xls", "pdf"])
 
-    df = load_data(filepath, sheet_name=sheet_name)
-    df = generate_embeddings(df)
-    result_df = process_entries(df)
-    result_df.to_csv("flagged_time_entries.csv", index=False)
-    print("Processing complete. Results saved to 'flagged_time_entries.csv'.")
+if uploaded_file is not None:
+    try:
+        df = load_data(uploaded_file)
+        df = generate_embeddings(df)
+        result_df = process_entries(df)
+
+        st.success("Processing complete!")
+        st.dataframe(result_df)
+
+        csv = result_df.to_csv(index=False).encode("utf-8")
+        st.download_button("📥 Download Results", csv, "flagged_time_entries.csv", "text/csv")
+
+    except Exception as e:
+        st.error(f"Error processing file: {str(e)}")
 
