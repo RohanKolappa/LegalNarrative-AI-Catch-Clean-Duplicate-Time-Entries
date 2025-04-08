@@ -28,5 +28,5 @@ Outputs a downloadable CSV report to streamline editing and review
 
 📂 Supported File Types: .xlsx, .xls, .pdf
 
-Requires LlamaParse credits and railway/koyeb for streamlit deployment.
+Requires LlamaParse credits/api key and railway/koyeb (or any other deployment platoform) for streamlit app deployment.
 Code is currently setup to run locally via Docker.
